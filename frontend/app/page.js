@@ -26,6 +26,7 @@ export default function Home() {
   const [latestMatches, setLatestMatches] = useState([]);
   const [latestMatchesLoading, setLatestMatchesLoading] = useState(false);
   const [latestMatchesError, setLatestMatchesError] = useState('');
+  const [latestMatchesStatus, setLatestMatchesStatus] = useState('idle');
   const [connected, setConnected] = useState(false);
   const [socket, setSocket] = useState(null);
 
@@ -49,16 +50,40 @@ export default function Home() {
     let active = true;
     setLatestMatchesLoading(true);
     setLatestMatchesError('');
+    setLatestMatchesStatus('loading');
+
     fetch(`${BACKEND_URL}/api/matches/latest`)
-      .then((response) => {
-        if (!response.ok) throw new Error('Could not load recent CS2 results');
-        return response.json();
-      })
-      .then((matches) => {
-        if (active) setLatestMatches(Array.isArray(matches) ? matches : []);
+      .then((response) => response.json().then((payload) => ({ response, payload })))
+      .then(({ response, payload }) => {
+        if (!response.ok) {
+          throw new Error(payload?.error || 'Could not load recent CS2 results');
+        }
+
+        const normalizedPayload = Array.isArray(payload)
+          ? { status: 'ok', matches: payload }
+          : {
+              status: payload?.status || 'ok',
+              matches: Array.isArray(payload?.matches) ? payload.matches : [],
+            };
+
+        if (!active) return;
+
+        setLatestMatchesStatus(normalizedPayload.status);
+        setLatestMatches(normalizedPayload.matches);
+
+        if (normalizedPayload.status === 'empty') {
+          setLatestMatchesError('No recent CS2 results are currently available from the provider.');
+        }
+
+        if (normalizedPayload.status === 'unavailable') {
+          setLatestMatchesError(payload?.error || 'Recent CS2 results are temporarily unavailable.');
+        }
       })
       .catch((error) => {
-        if (active) setLatestMatchesError(error.message);
+        if (!active) return;
+        setLatestMatchesStatus('error');
+        setLatestMatches([]);
+        setLatestMatchesError(error.message || 'Could not load recent CS2 results');
       })
       .finally(() => {
         if (active) setLatestMatchesLoading(false);
@@ -156,9 +181,13 @@ export default function Home() {
             Recent CS2 Results
           </h3>
           {latestMatchesLoading && <p className="text-sm text-gray-500">Loading results...</p>}
-          {latestMatchesError && <p className="text-sm text-red-400">{latestMatchesError}</p>}
-          {!latestMatchesLoading && !latestMatchesError && latestMatches.length === 0 && (
-            <p className="text-sm text-gray-500">No recent results available.</p>
+          {latestMatchesError && (
+            <p className={`text-sm ${latestMatchesStatus === 'empty' ? 'text-amber-300' : 'text-red-400'}`}>
+              {latestMatchesError}
+            </p>
+          )}
+          {!latestMatchesLoading && latestMatchesStatus === 'empty' && latestMatches.length === 0 && (
+            <p className="text-sm text-gray-500">No recent results are currently available from the provider.</p>
           )}
           {latestMatches.length > 0 && (
             <div className="flex flex-wrap gap-2">

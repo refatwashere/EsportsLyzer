@@ -3,6 +3,16 @@ const axios = require('axios');
 const BASE_URL = (process.env.CSAPI_BASE_URL || 'https://api.csapi.de').replace(/\/$/, '');
 const REQUEST_TIMEOUT_MS = 8000;
 
+function buildLatestMatchesResponse(matches, source = 'csapi') {
+  const normalizedMatches = Array.isArray(matches) ? matches : [];
+
+  if (normalizedMatches.length === 0) {
+    return { source, status: 'empty', matches: [] };
+  }
+
+  return { source, status: 'ok', matches: normalizedMatches };
+}
+
 function normalizeMatchSummary(raw) {
   if (!raw || raw.id == null || !raw.team1?.name || !raw.team2?.name) return null;
 
@@ -121,6 +131,7 @@ async function getMatch(matchId) {
 }
 
 module.exports = {
+  buildLatestMatchesResponse,
   getLatestMatches,
   getMatch,
   normalizeMatch,

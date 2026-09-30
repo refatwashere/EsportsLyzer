@@ -85,3 +85,11 @@ Audit basis: current workspace source and documentation, reviewed 2026-09-30. St
 
 - [x] Restore recent-match discovery and selected-match details using verified CSAPI responses and explicit upstream failure semantics.
 - [ ] Continue with real multi-sport discovery/data and the remaining phase 2 reliability and test coverage.
+
+## Immediate next iteration (GitHub-ready build plan)
+
+- [ ] Harden source validation for missing, malformed, delayed, and rate-limited provider payloads.
+- [ ] Show explicit provider/fallback status in the UI and API responses.
+- [ ] Add live-match discovery and normalization for football and tennis providers.
+- [ ] Connect favorites, auth state, and persistence to a validated Supabase schema and RLS configuration.
+- [ ] Review production config and deployment readiness for frontend/backend hosting and environment secret handling.

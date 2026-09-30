@@ -1,5 +1,7 @@
 # EsportsLyzer 🔥
 
+EsportsLyzer is a multi-sport match intelligence dashboard focused on team performance, player context, and live-friendly analytics for esports and mainstream sports. The project currently emphasizes verified CS2 match data from public APIs, with a broader sports dashboard shell already in place for football and tennis views.
+
 ## Developer
 
 - Robiul Islam Refat
@@ -7,17 +9,31 @@
 - [Email](mailto:rbl.islam.refat2@gmail.com)
 - [GitHub](https://github.com/refatwashere/EsportsLyzer)
 
-CS2 and multi-sport match analytics prototype.
+## Current status
+
+This repository is a working product prototype with real data plumbing for CS2 and front-end scaffolding for multi-sport expansion. It is not a fully live event stream and it does not claim to provide guaranteed round-by-round or event-level match data from the current public providers.
 
 ## What’s implemented now
 
 - CS2 match results, map scores, player stats, and ranking-based estimates via public CSAPI (`api.csapi.de`)
 - Recent results list with selectable match details
-- Socket.IO refreshes selected match data every 30 seconds; CSAPI does not guarantee a current-live match feed
-- Player cards and team comparison; round timeline and event highlights require event-level data not currently supplied by CSAPI
+- Socket.IO refreshes selected match data every 30 seconds for a selected match object; CSAPI does not guarantee a true current-live feed
+- Player cards and team comparison panels
 - **Sport selector**: Esports / Football / Tennis
-- Sofascore service layer (realistic mocks when API blocks)
+- Sofascore service layer scaffolding and graceful fallback patterns
 - Supabase sign-in/sign-up and favorites UI (requires project keys, schema, and row-level security configuration)
+
+## Next iteration priorities
+
+The immediate roadmap for the next build cycle is:
+
+1. Hardening provider validation and error-state handling across CS2, football, and tennis data feeds.
+2. Improving data quality by replacing generated fallback content with explicit empty/error states when upstream sources are unavailable.
+3. Adding a reliable live-match discovery layer and sport-specific normalization for football and tennis providers.
+4. Completing auth persistence, favorites storage, and Supabase schema/row-level security readiness.
+5. Productizing the dashboard with better analytics, clearer UI states, and better deployment-ready configuration.
+
+This is the next practical iteration after the repository was prepared for GitHub and the initial real-data backend was restored.
 
 ## Quick Start
 

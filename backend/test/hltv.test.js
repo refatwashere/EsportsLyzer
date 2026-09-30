@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { normalizeMatch, normalizeMatchSummary } = require('../services/csapi');
+const { normalizeMatch, normalizeMatchSummary, buildLatestMatchesResponse } = require('../services/csapi');
 const { computePrediction } = require('../utils/prediction');
 const { generateHighlights } = require('../utils/highlights');
 const { buildTeamComparison } = require('../utils/teams');
@@ -86,6 +86,16 @@ test('derives probabilities and team comparisons from provider data', () => {
 
 test('does not create a probability estimate without provider data', () => {
   assert.equal(computePrediction({ teams: [] }), null);
+});
+
+test('returns explicit provider status when no recent matches are available', () => {
+  const response = buildLatestMatchesResponse([]);
+
+  assert.deepEqual(response, {
+    source: 'csapi',
+    status: 'empty',
+    matches: [],
+  });
 });
 
 test('rejects match payloads without the required identity and teams', () => {

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getLatestMatches, getMatch } = require('../services/csapi');
+const { getLatestMatches, getMatch, buildLatestMatchesResponse } = require('../services/csapi');
 const { computePrediction } = require('../utils/prediction');
 const { generateHighlights } = require('../utils/highlights');
 const { buildTimeline } = require('../utils/timeline');
@@ -10,15 +10,25 @@ const { buildTeamComparison } = require('../utils/teams');
 router.get('/matches/latest', async (req, res) => {
   const requestedLimit = req.query.limit === undefined ? 10 : Number(req.query.limit);
   if (!Number.isInteger(requestedLimit) || requestedLimit < 1) {
-    return res.status(400).json({ error: 'limit must be a positive integer' });
+    return res.status(400).json({
+      source: 'csapi',
+      status: 'error',
+      matches: [],
+      error: 'limit must be a positive integer',
+    });
   }
 
   try {
     const matches = await getLatestMatches(Math.min(requestedLimit, 50));
-    return res.json(matches);
+    return res.json(buildLatestMatchesResponse(matches));
   } catch (err) {
     console.error('Latest matches error:', err.message);
-    return res.status(502).json({ error: 'Unable to fetch latest matches from CSAPI' });
+    return res.status(502).json({
+      source: 'csapi',
+      status: 'unavailable',
+      matches: [],
+      error: 'Unable to fetch latest matches from CSAPI',
+    });
   }
 });
 
@@ -33,16 +43,22 @@ router.get('/match/:id', async (req, res) => {
     const teams = buildTeamComparison(matchData);
 
     res.json({
+      source: 'csapi',
+      status: 'ok',
       matchData,
       prediction,
       highlights,
       timeline,
       players,
-      teams
+      teams,
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to fetch match data' });
+    res.status(500).json({
+      source: 'csapi',
+      status: 'error',
+      error: 'Failed to fetch match data',
+    });
   }
 });
 
