@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 
 export default function AuthPanel() {
-  const { user, loading, signUp, signIn, signOut } = useAuth();
+  const { user, loading, configured, signUp, signIn, signOut } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [mode, setMode] = useState('signin'); // signin | signup
@@ -12,6 +12,14 @@ export default function AuthPanel() {
   const [msg, setMsg] = useState('');
 
   if (loading) return null;
+
+  if (!configured) {
+    return (
+      <div className="bg-amber-900/20 border border-amber-700/60 rounded-xl p-4 mb-6 text-sm text-amber-200">
+        Supabase is not configured yet. Add the project URL and anon key to frontend/.env.local to enable sign-in and favorites.
+      </div>
+    );
+  }
 
   if (user) {
     return (

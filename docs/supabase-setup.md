@@ -1,11 +1,25 @@
 # Supabase Auth + Favorites Setup
 
-## 1. Create project
+## 1. Create the project
 1. Go to https://supabase.com → New Project (free tier is fine)
-2. Copy **Project URL** and **anon public** key → put in `frontend/.env.local`
-3. Only if using privileged backend operations, put the **service_role** key in `backend/.env` and keep it secret. Never expose it to the frontend.
+2. Copy the **Project URL** and **anon public** key into `frontend/.env.local`
+3. Only if you need privileged backend operations, add the **service_role** key to `backend/.env` and keep it secret. Never expose it to the frontend.
 
-## 2. Run this SQL in Supabase SQL Editor
+Example frontend values:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
+
+Example backend values:
+
+```bash
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```
+
+## 2. Run this SQL in the Supabase SQL Editor
 
 ```sql
 -- Users are handled by auth.users automatically
@@ -29,10 +43,13 @@ create policy "Users can manage own favorites"
   with check (auth.uid() = user_id);
 ```
 
-## 3. Enable Email Auth
+## 3. Enable email auth
 Dashboard → Authentication → Providers → Email → Enable
 
-## 4. Restart backend + frontend
-The AuthPanel on the homepage will now work.
+## 4. Restart the app
+Restart both the frontend and backend after saving the environment values. The auth panel on the homepage will then enable sign-in and favorites.
 
-The sign-in and favorites UI use the Supabase browser client directly; row-level security protects the `favorites` table. `backend/services/supabase.js` contains helper functions but is not currently mounted as an API route.
+## 5. Operational notes
+- The browser client is used for UI auth and favorites. Row-level security protects the `favorites` table.
+- The backend helper in `backend/services/supabase.js` is ready for admin operations, but it is not mounted as a public route yet.
+- If the keys are missing, the UI now shows a clear setup message instead of failing unexpectedly.

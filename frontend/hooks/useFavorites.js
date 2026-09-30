@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { getSupabaseClient, supabaseConfigured } from '../lib/supabaseClient';
 import { useAuth } from './useAuth';
 
 export function useFavorites() {
@@ -10,13 +10,14 @@ export function useFavorites() {
   const [loading, setLoading] = useState(false);
 
   const refresh = useCallback(async () => {
-    if (!user) {
+    const client = getSupabaseClient();
+    if (!client || !user) {
       setFavorites([]);
       return;
     }
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from('favorites')
         .select('*')
         .eq('user_id', user.id)
@@ -42,18 +43,24 @@ export function useFavorites() {
   };
 
   const toggleFavorite = async (match) => {
+    if (!supabaseConfigured) {
+      alert('Supabase is not configured yet. Add the keys to frontend/.env.local to enable favorites.');
+      return;
+    }
+
     if (!user) {
       alert('Sign in to save favorites ✨');
       return;
     }
 
+    const client = getSupabaseClient();
     const sport = match.sport || 'esports';
     const matchId = String(match.id || match.match_id);
     const already = isFavorite(sport, matchId);
 
     try {
       if (already) {
-        const { error } = await supabase
+        const { error } = await client
           .from('favorites')
           .delete()
           .eq('user_id', user.id)
@@ -72,7 +79,7 @@ export function useFavorites() {
           match.awayTeam ||
           'Team 2';
 
-        const { error } = await supabase.from('favorites').upsert(
+        const { error } = await client.from('favorites').upsert(
           {
             user_id: user.id,
             sport,
@@ -97,5 +104,6 @@ export function useFavorites() {
     isFavorite,
     toggleFavorite,
     refresh,
+    configured: supabaseConfigured,
   };
 }
